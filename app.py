@@ -4,7 +4,6 @@ import joblib
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 import streamlit.components.v1 as components
-import speech_recognition as sr
 
 # --------------------------------
 # PAGE CONFIG
@@ -21,13 +20,13 @@ st.set_page_config(
 model = joblib.load("heart_model.pkl")
 
 # --------------------------------
-# CUSTOM CSS
+# BACKGROUND + CSS
 # --------------------------------
 page_bg = """
 <style>
 
 [data-testid="stAppViewContainer"]{
-background-image: url("https://images.unsplash.com/photo-1505751172876-fa1923c5c528");
+background-image: url("https://images.unsplash.com/photo-1576091160399-112ba8d25d1f");
 background-size: cover;
 background-position: center;
 background-attachment: fixed;
@@ -41,7 +40,7 @@ background: rgba(0,0,0,0);
 background: rgba(0,0,0,0.75);
 padding: 40px;
 border-radius: 25px;
-box-shadow: 0px 0px 30px rgba(0,0,0,0.7);
+box-shadow: 0px 0px 30px rgba(0,0,0,0.6);
 }
 
 .title{
@@ -72,6 +71,7 @@ transition:0.3s;
 
 .stButton>button:hover{
 transform:scale(1.03);
+background:linear-gradient(to right,#ff4b2b,#ff416c);
 }
 
 .result-success{
@@ -100,7 +100,7 @@ color:white;
 st.markdown(page_bg, unsafe_allow_html=True)
 
 # --------------------------------
-# MAIN BOX
+# MAIN UI
 # --------------------------------
 st.markdown('<div class="main-box">', unsafe_allow_html=True)
 
@@ -110,309 +110,277 @@ st.markdown(
 )
 
 st.markdown(
-    '<div class="subtitle">AI Powered Smart Healthcare System</div>',
+    '<div class="subtitle">AI Powered Smart Health Care System</div>',
     unsafe_allow_html=True
 )
 
 # --------------------------------
-# SIDEBAR
+# INPUT SECTION
 # --------------------------------
-st.sidebar.title("🩺 Navigation")
+col1, col2 = st.columns(2)
 
-page = st.sidebar.radio(
-    "Go To",
-    ["Prediction", "BMI Calculator", "Voice Assistant"]
-)
+with col1:
+
+    age = st.slider("Age", 1, 100, 30)
+
+    sex = st.selectbox(
+        "Sex",
+        ["Female", "Male"]
+    )
+
+    sex = 0 if sex == "Female" else 1
+
+    chest_pain = st.selectbox(
+        "Chest Pain Type",
+        [1, 2, 3, 4]
+    )
+
+    bp = st.slider(
+        "Blood Pressure",
+        80,
+        200,
+        120
+    )
+
+    cholesterol = st.slider(
+        "Cholesterol",
+        100,
+        400,
+        200
+    )
+
+    fbs = st.selectbox(
+        "Fasting Blood Sugar > 120",
+        [0, 1]
+    )
+
+with col2:
+
+    ekg = st.selectbox(
+        "EKG Results",
+        [0, 1, 2]
+    )
+
+    max_hr = st.slider(
+        "Maximum Heart Rate",
+        60,
+        220,
+        150
+    )
+
+    exercise_angina = st.selectbox(
+        "Exercise Induced Angina",
+        [0, 1]
+    )
+
+    st_depression = st.slider(
+        "ST Depression",
+        0.0,
+        6.0,
+        1.0
+    )
+
+    slope = st.selectbox(
+        "Slope of ST",
+        [1, 2, 3]
+    )
+
+    vessels = st.selectbox(
+        "Number of Major Vessels",
+        [0, 1, 2, 3]
+    )
+
+    thallium = st.selectbox(
+        "Thallium Test",
+        [1, 2, 3, 4]
+    )
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 # --------------------------------
-# PREDICTION PAGE
+# PREDICTION
 # --------------------------------
-if page == "Prediction":
+if st.button("🔍 Predict Heart Disease"):
 
-    col1, col2 = st.columns(2)
+    input_data = np.array([[
+        age,
+        sex,
+        chest_pain,
+        bp,
+        cholesterol,
+        fbs,
+        ekg,
+        max_hr,
+        exercise_angina,
+        st_depression,
+        slope,
+        vessels,
+        thallium
+    ]])
 
-    with col1:
+    # Prediction
+    prediction = model.predict(input_data)
 
-        age = st.slider("Age", 1, 100, 30)
+    # Probability
+    probability = model.predict_proba(input_data)[0][1] * 100
 
-        sex = st.selectbox(
-            "Sex",
-            ["Female", "Male"]
-        )
+    st.balloons()
 
-        sex = 0 if sex == "Female" else 1
-
-        chest_pain = st.selectbox(
-            "Chest Pain Type",
-            [1, 2, 3, 4]
-        )
-
-        bp = st.slider(
-            "Blood Pressure",
-            80,
-            200,
-            120
-        )
-
-        cholesterol = st.slider(
-            "Cholesterol",
-            100,
-            400,
-            200
-        )
-
-        fbs = st.selectbox(
-            "Fasting Blood Sugar > 120",
-            [0, 1]
-        )
-
-    with col2:
-
-        ekg = st.selectbox(
-            "EKG Results",
-            [0, 1, 2]
-        )
-
-        max_hr = st.slider(
-            "Maximum Heart Rate",
-            60,
-            220,
-            150
-        )
-
-        exercise_angina = st.selectbox(
-            "Exercise Induced Angina",
-            [0, 1]
-        )
-
-        st_depression = st.slider(
-            "ST Depression",
-            0.0,
-            6.0,
-            1.0
-        )
-
-        slope = st.selectbox(
-            "Slope of ST",
-            [1, 2, 3]
-        )
-
-        vessels = st.selectbox(
-            "Number of Major Vessels",
-            [0, 1, 2, 3]
-        )
-
-        thallium = st.selectbox(
-            "Thallium Test",
-            [1, 2, 3, 4]
-        )
-
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("---")
 
     # --------------------------------
-    # PREDICT BUTTON
+    # RESULT
     # --------------------------------
-    if st.button("🔍 Predict Heart Disease"):
+    if prediction[0] == 1:
 
-        input_data = np.array([[
-            age,
-            sex,
-            chest_pain,
-            bp,
-            cholesterol,
-            fbs,
-            ekg,
-            max_hr,
-            exercise_angina,
-            st_depression,
-            slope,
-            vessels,
-            thallium
-        ]])
-
-        prediction = model.predict(input_data)
-
-        st.balloons()
-
-        st.markdown("---")
-
-        # --------------------------------
-        # RESULT
-        # --------------------------------
-        if prediction[0] == 1:
-
-            st.markdown(
-                '<div class="result-danger">💔 Heart Disease Found 😢</div>',
-                unsafe_allow_html=True
-            )
-
-            st.image(
-                "https://cdn-icons-png.flaticon.com/512/2966/2966486.png",
-                width=250
-            )
-
-            st.error("Please consult a cardiologist immediately.")
-
-            components.html(
-            """
-            <div style="text-align:center;">
-            <img src="https://media.tenor.com/6oSedVpeB-YAAAAC/broken-heart.gif" width="350">
-            </div>
-            """,
-            height=350
-            )
-
-        else:
-
-            st.markdown(
-                '<div class="result-success">🎉 Hurrayy! No Disease Found 😍</div>',
-                unsafe_allow_html=True
-            )
-
-            st.image(
-                "https://cdn-icons-png.flaticon.com/512/190/190411.png",
-                width=250
-            )
-
-            st.success("Your heart looks healthy and strong ❤️")
-
-            components.html(
-            """
-            <div style="text-align:center;">
-            <img src="https://media.tenor.com/0AVbKGY_MxMAAAAC/heart.gif" width="350">
-            </div>
-            """,
-            height=350
-            )
-
-        # --------------------------------
-        # PIE CHART
-        # --------------------------------
-        st.markdown("## 📊 Health Analysis")
-
-        labels = ['Healthy', 'Risk']
-
-        if prediction[0] == 1:
-            sizes = [30, 70]
-        else:
-            sizes = [85, 15]
-
-        fig, ax = plt.subplots()
-
-        ax.pie(
-            sizes,
-            labels=labels,
-            autopct='%1.1f%%'
+        st.markdown(
+            '<div class="result-danger">💔 Heart Disease Found 😢</div>',
+            unsafe_allow_html=True
         )
 
-        st.pyplot(fig)
+        st.progress(int(probability))
 
-        # --------------------------------
-        # DOCTOR RECOMMENDATION
-        # --------------------------------
-        st.markdown("## 🩺 Recommended Cardiologists")
-
-        st.markdown("""
-        - Dr. Sharma — Heart Specialist  
-        - Dr. Verma — AIIMS Cardiologist  
-        - Apollo Hospital Cardiac Unit  
-        """)
-
-        # --------------------------------
-        # PDF REPORT
-        # --------------------------------
-        pdf = FPDF()
-
-        pdf.add_page()
-
-        pdf.set_font("Arial", size=16)
-
-        pdf.cell(
-            200,
-            10,
-            txt="Heart Disease Prediction Report",
-            ln=True
+        st.markdown(
+            f"<h2 style='text-align:center;color:white;'>Risk Score: {probability:.2f}%</h2>",
+            unsafe_allow_html=True
         )
 
-        if prediction[0] == 1:
-            result_text = "Heart Disease Found"
-        else:
-            result_text = "No Heart Disease Found"
-
-        pdf.cell(
-            200,
-            10,
-            txt=result_text,
-            ln=True
+        st.image(
+            "https://cdn-icons-png.flaticon.com/512/2966/2966486.png",
+            width=250
         )
 
-        pdf.output("report.pdf")
+        st.error("Please consult a cardiologist immediately.")
 
-        with open("report.pdf", "rb") as file:
+        components.html(
+        """
+        <div style="text-align:center;">
+        <img src="https://media.tenor.com/6oSedVpeB-YAAAAC/broken-heart.gif" width="350">
+        </div>
+        """,
+        height=350
+        )
 
-            st.download_button(
-                label="📥 Download Medical Report",
-                data=file,
-                file_name="Heart_Report.pdf",
-                mime="application/pdf"
-            )
+    else:
 
-# --------------------------------
-# BMI CALCULATOR PAGE
-# --------------------------------
-elif page == "BMI Calculator":
+        st.markdown(
+            '<div class="result-success">🎉 Hurrayy! No Disease Found 😍</div>',
+            unsafe_allow_html=True
+        )
 
+        st.progress(int(probability))
+
+        st.markdown(
+            f"<h2 style='text-align:center;color:white;'>Risk Score: {probability:.2f}%</h2>",
+            unsafe_allow_html=True
+        )
+
+        st.image(
+            "https://cdn-icons-png.flaticon.com/512/190/190411.png",
+            width=250
+        )
+
+        st.success("Your heart looks healthy and strong ❤️")
+
+        components.html(
+        """
+        <div style="text-align:center;">
+        <img src="https://media.tenor.com/0AVbKGY_MxMAAAAC/heart.gif" width="350">
+        </div>
+        """,
+        height=350
+        )
+
+    # --------------------------------
+    # PIE CHART
+    # --------------------------------
+    st.markdown("## 📊 Prediction Analysis")
+
+    labels = ['Healthy', 'Risk']
+    sizes = [100 - probability, probability]
+
+    fig, ax = plt.subplots()
+
+    ax.pie(
+        sizes,
+        labels=labels,
+        autopct='%1.1f%%'
+    )
+
+    st.pyplot(fig)
+
+    # --------------------------------
+    # BMI CALCULATOR
+    # --------------------------------
     st.markdown("## ⚖️ BMI Calculator")
 
-    weight = st.number_input(
-        "Enter Weight (kg)",
-        1.0,
-        200.0
-    )
+    weight = st.number_input("Enter Weight (kg)", 1.0, 200.0)
 
-    height = st.number_input(
-        "Enter Height (m)",
-        0.5,
-        3.0
-    )
+    height = st.number_input("Enter Height (m)", 0.5, 3.0)
 
     if height > 0:
-
         bmi = weight / (height ** 2)
 
         st.success(f"Your BMI is: {bmi:.2f}")
 
-# --------------------------------
-# VOICE ASSISTANT PAGE
-# --------------------------------
-elif page == "Voice Assistant":
+    # --------------------------------
+    # DOCTOR RECOMMENDATION
+    # --------------------------------
+    st.markdown("## 🩺 Recommended Cardiologists")
 
-    st.markdown("## 🎤 Voice Health Assistant")
+    st.markdown("""
+    - Dr. Sharma — Heart Specialist  
+    - Dr. Verma — AIIMS Cardiologist  
+    - Apollo Hospital Cardiac Unit  
+    """)
 
-    st.info("Click button and speak your health question")
+    # --------------------------------
+    # AI CHAT SECTION
+    # --------------------------------
+    st.markdown("## 🤖 AI Health Assistant")
 
-    if st.button("🎙️ Start Listening"):
+    user_question = st.text_input(
+        "Ask health related questions"
+    )
 
-        recognizer = sr.Recognizer()
+    if user_question:
 
-        try:
+        st.info(
+            "For accurate medical advice please consult a certified doctor."
+        )
 
-            with sr.Microphone() as source:
+    # --------------------------------
+    # PDF REPORT
+    # --------------------------------
+    pdf = FPDF()
 
-                st.write("Listening...")
+    pdf.add_page()
 
-                audio = recognizer.listen(source)
+    pdf.set_font("Arial", size=16)
 
-                text = recognizer.recognize_google(audio)
+    pdf.cell(
+        200,
+        10,
+        txt="Heart Disease Prediction Report",
+        ln=True
+    )
 
-                st.success(f"You said: {text}")
+    pdf.cell(
+        200,
+        10,
+        txt=f"Risk Score: {probability:.2f}%",
+        ln=True
+    )
 
-                st.info(
-                    "For proper medical advice please consult a doctor."
-                )
+    pdf.output("report.pdf")
 
-        except Exception as e:
+    with open("report.pdf", "rb") as file:
 
-            st.error("Microphone not detected or speech not recognized.")
+        st.download_button(
+            label="📥 Download Medical Report",
+            data=file,
+            file_name="Heart_Report.pdf",
+            mime="application/pdf"
+        )
 
 st.markdown('</div>', unsafe_allow_html=True)
