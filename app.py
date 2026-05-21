@@ -26,7 +26,7 @@ page_bg = """
 <style>
 
 [data-testid="stAppViewContainer"]{
-background-image: url("https://images.unsplash.com/photo-1530026405186-ed1f139313f8?q=80&w=2070&auto=format&fit=crop");
+background-image: url("https://images.unsplash.com/photo-1516549655169-df83a0774514");
 background-size: cover;
 background-position: center;
 background-attachment: fixed;
