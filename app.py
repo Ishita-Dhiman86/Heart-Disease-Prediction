@@ -26,10 +26,20 @@ page_bg = """
 <style>
 
 [data-testid="stAppViewContainer"]{
-background-image: url("https://images.unsplash.com/photo-1516549655169-df83a0774514");
+background-image: url("https://img.freepik.com/free-vector/heartbeat-monitor-medical-background_23-2148822764.jpg");
 background-size: cover;
 background-position: center;
 background-attachment: fixed;
+animation: moveBg 15s infinite alternate;
+}
+
+@keyframes moveBg{
+0%{
+background-position:left;
+}
+100%{
+background-position:right;
+}
 }
 
 [data-testid="stHeader"]{
@@ -115,6 +125,13 @@ st.markdown(
 )
 
 # --------------------------------
+# PATIENT NAME
+# --------------------------------
+patient_name = st.text_input(
+    "👤 Enter Patient Name"
+)
+
+# --------------------------------
 # INPUT SECTION
 # --------------------------------
 col1, col2 = st.columns(2)
@@ -127,6 +144,8 @@ with col1:
         "Sex",
         ["Female", "Male"]
     )
+
+    sex_value = sex
 
     sex = 0 if sex == "Female" else 1
 
@@ -233,6 +252,8 @@ if st.button("🔍 Predict Heart Disease"):
     # --------------------------------
     if prediction[0] == 1:
 
+        result_text = "HEART DISEASE DETECTED"
+
         st.markdown(
             '<div class="result-danger">💔 Heart Disease Found 😢</div>',
             unsafe_allow_html=True
@@ -262,6 +283,8 @@ if st.button("🔍 Predict Heart Disease"):
         )
 
     else:
+
+        result_text = "NO HEART DISEASE DETECTED"
 
         st.markdown(
             '<div class="result-success">🎉 Hurrayy! No Disease Found 😍</div>',
@@ -310,31 +333,6 @@ if st.button("🔍 Predict Heart Disease"):
     st.pyplot(fig)
 
     # --------------------------------
-    # BMI CALCULATOR
-    # --------------------------------
-    st.markdown("## ⚖️ BMI Calculator")
-
-    weight = st.number_input("Enter Weight (kg)", 1.0, 200.0)
-
-    height = st.number_input("Enter Height (m)", 0.5, 3.0)
-
-    if height > 0:
-        bmi = weight / (height ** 2)
-
-        st.success(f"Your BMI is: {bmi:.2f}")
-
-    # --------------------------------
-    # DOCTOR RECOMMENDATION
-    # --------------------------------
-    st.markdown("## 🩺 Recommended Cardiologists")
-
-    st.markdown("""
-    - Dr. Sharma — Heart Specialist  
-    - Dr. Verma — AIIMS Cardiologist  
-    - Apollo Hospital Cardiac Unit  
-    """)
-
-    # --------------------------------
     # AI CHAT SECTION
     # --------------------------------
     st.markdown("## 🤖 AI Health Assistant")
@@ -356,19 +354,64 @@ if st.button("🔍 Predict Heart Disease"):
 
     pdf.add_page()
 
-    pdf.set_font("Arial", size=16)
+    pdf.set_font("Arial", "B", 20)
 
     pdf.cell(
         200,
         10,
-        txt="Heart Disease Prediction Report",
-        ln=True
+        txt="HEART DISEASE MEDICAL REPORT",
+        ln=True,
+        align='C'
     )
 
+    pdf.ln(10)
+
+    pdf.set_font("Arial", size=14)
+
+    pdf.cell(200, 10, txt=f"Patient Name: {patient_name}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Age: {age}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Sex: {sex_value}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Chest Pain Type: {chest_pain}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Blood Pressure: {bp}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Cholesterol: {cholesterol}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Fasting Blood Sugar: {fbs}", ln=True)
+
+    pdf.cell(200, 10, txt=f"EKG Results: {ekg}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Maximum Heart Rate: {max_hr}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Exercise Angina: {exercise_angina}", ln=True)
+
+    pdf.cell(200, 10, txt=f"ST Depression: {st_depression}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Slope of ST: {slope}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Number of Major Vessels: {vessels}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Thallium Test: {thallium}", ln=True)
+
+    pdf.ln(10)
+
+    pdf.set_font("Arial", "B", 16)
+
+    if prediction[0] == 1:
+
+        pdf.set_text_color(255, 0, 0)
+
+    else:
+
+        pdf.set_text_color(0, 128, 0)
+
     pdf.cell(
         200,
         10,
-        txt=f"Risk Score: {probability:.2f}%",
+        txt=f"FINAL RESULT: {result_text}",
         ln=True
     )
 
