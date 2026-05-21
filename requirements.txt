@@ -1,6 +1,7 @@
 streamlit
 numpy
 joblib
-scikit-learn
-pandas
-Pillow
+matplotlib
+fpdf
+speechrecognition
+pyaudio
