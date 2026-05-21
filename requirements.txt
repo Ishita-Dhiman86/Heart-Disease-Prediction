@@ -3,5 +3,3 @@ numpy
 joblib
 matplotlib
 fpdf
-speechrecognition
-pyaudio
