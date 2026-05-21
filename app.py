@@ -3,7 +3,6 @@ import numpy as np
 import joblib
 import matplotlib.pyplot as plt
 from fpdf import FPDF
-import streamlit.components.v1 as components
 from datetime import datetime
 
 # --------------------------------
@@ -227,8 +226,6 @@ if st.button("🔍 Predict Heart Disease"):
 
     probability = model.predict_proba(input_data)[0][1] * 100
 
-    st.balloons()
-
     st.markdown("---")
 
     # --------------------------------
@@ -266,7 +263,7 @@ if st.button("🔍 Predict Heart Disease"):
     )
 
     # --------------------------------
-    # CHART
+    # PIE CHART
     # --------------------------------
     st.markdown("## 📊 Prediction Analysis")
 
@@ -284,21 +281,34 @@ if st.button("🔍 Predict Heart Disease"):
     st.pyplot(fig)
 
     # --------------------------------
-    # PDF REPORT ONLY
+    # PDF REPORT
     # --------------------------------
     pdf = FPDF()
 
     pdf.add_page()
 
+    # TITLE
     pdf.set_font("Arial", "B", 20)
 
-    pdf.cell(200, 15, "HEART HEALTH MEDICAL REPORT", ln=True, align='C')
+    pdf.cell(
+        200,
+        15,
+        "HEART HEALTH MEDICAL REPORT",
+        ln=True,
+        align='C'
+    )
 
     pdf.ln(10)
 
+    # PATIENT DETAILS
     pdf.set_font("Arial", "", 12)
 
-    pdf.cell(200, 10, f"Patient Name: {patient_name}", ln=True)
+    pdf.cell(
+        200,
+        10,
+        f"Patient Name: {patient_name}",
+        ln=True
+    )
 
     pdf.cell(
         200,
@@ -320,39 +330,78 @@ if st.button("🔍 Predict Heart Disease"):
 
     pdf.set_text_color(0,0,0)
 
+    # TABLE DATA
     tests = [
 
         ("Age", str(age), "NORMAL"),
         ("Sex", sex, "NORMAL"),
         ("Chest Pain Type", str(chest_pain), "CHECK"),
         ("Blood Pressure", str(bp), "NORMAL"),
-        ("Cholesterol", str(cholesterol), "HIGH" if cholesterol > 240 else "NORMAL"),
-        ("Fasting Blood Sugar", str(fbs), "HIGH" if fbs == 1 else "NORMAL"),
+        ("Cholesterol", str(cholesterol),
+         "HIGH" if cholesterol > 240 else "NORMAL"),
+        ("Fasting Blood Sugar", str(fbs),
+         "HIGH" if fbs == 1 else "NORMAL"),
         ("EKG Results", str(ekg), "CHECK"),
         ("Maximum Heart Rate", str(max_hr), "NORMAL"),
-        ("Exercise Induced Angina", str(exercise_angina), "CHECK"),
+        ("Exercise Induced Angina",
+         str(exercise_angina), "CHECK"),
         ("ST Depression", str(st_depression), "CHECK"),
-        ("Number of Major Vessels", str(vessels), "CHECK"),
-        ("Final Prediction", result_text, result_status)
+        ("Number of Major Vessels",
+         str(vessels), "CHECK")
 
     ]
 
     for test, result, status in tests:
 
         pdf.cell(80, 10, test, 1)
+
         pdf.cell(50, 10, result, 1)
 
         if status == "NORMAL":
+
             pdf.set_text_color(0,128,0)
+
         else:
+
             pdf.set_text_color(255,0,0)
 
         pdf.cell(50, 10, status, 1, 1)
 
         pdf.set_text_color(0,0,0)
 
+    # FINAL RESULT BELOW TABLE
+    pdf.ln(10)
+
+    pdf.set_font("Arial", "B", 16)
+
+    if prediction[0] == 1:
+
+        pdf.set_text_color(255, 0, 0)
+
+        pdf.cell(
+            200,
+            10,
+            "FINAL RESULT: HEART DISEASE DETECTED",
+            ln=True
+        )
+
+    else:
+
+        pdf.set_text_color(0, 128, 0)
+
+        pdf.cell(
+            200,
+            10,
+            "FINAL RESULT: NO HEART DISEASE DETECTED",
+            ln=True
+        )
+
+    pdf.set_text_color(0,0,0)
+
+    # SAVE PDF
     pdf.output("report.pdf")
 
+    # DOWNLOAD BUTTON
     with open("report.pdf", "rb") as file:
 
         st.download_button(
