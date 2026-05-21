@@ -3,6 +3,7 @@ import numpy as np
 import joblib
 import matplotlib.pyplot as plt
 from fpdf import FPDF
+import streamlit.components.v1 as components
 from datetime import datetime
 
 # --------------------------------
@@ -26,9 +27,10 @@ page_bg = """
 <style>
 
 [data-testid="stAppViewContainer"]{
-background-image: url("https://images.unsplash.com/photo-1576091160399-112ba8d25d1f");
+background-image: url("https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=2070&auto=format&fit=crop");
 background-size: cover;
 background-position: center;
+background-repeat: no-repeat;
 background-attachment: fixed;
 }
 
@@ -37,7 +39,7 @@ background: rgba(0,0,0,0);
 }
 
 .main-box{
-background: rgba(0,0,0,0.72);
+background: rgba(0,0,0,0.75);
 padding: 40px;
 border-radius: 25px;
 box-shadow: 0px 0px 30px rgba(0,0,0,0.6);
@@ -57,13 +59,6 @@ color:white;
 margin-bottom:30px;
 }
 
-.patient-box{
-background: rgba(255,255,255,0.1);
-padding: 20px;
-border-radius: 15px;
-margin-bottom: 25px;
-}
-
 .stButton>button{
 width:100%;
 height:60px;
@@ -73,12 +68,6 @@ background:linear-gradient(to right,#ff416c,#ff4b2b);
 color:white;
 font-size:22px;
 font-weight:bold;
-transition:0.3s;
-}
-
-.stButton>button:hover{
-transform:scale(1.03);
-background:linear-gradient(to right,#ff4b2b,#ff416c);
 }
 
 .result-success{
@@ -101,62 +90,13 @@ font-weight:bold;
 color:white;
 }
 
-.report-box{
-background: rgba(255,255,255,0.93);
-padding:30px;
-border-radius:20px;
-margin-top:30px;
-color:black;
-backdrop-filter: blur(5px);
-}
-
-.report-title{
-text-align:center;
-font-size:42px;
-font-weight:bold;
-color:#003366;
-margin-bottom:30px;
-}
-
-.report-table{
-width:100%;
-border-collapse: collapse;
-margin-top:20px;
-}
-
-.report-table th{
-background:#0f766e;
-color:white;
-padding:14px;
-font-size:18px;
-text-align:left;
-}
-
-.report-table td{
-padding:14px;
-border:1px solid #ddd;
-font-size:16px;
-}
-
-.normal{
-background:#16a34a;
-color:white;
-font-weight:bold;
-}
-
-.high{
-background:#dc2626;
-color:white;
-font-weight:bold;
-}
-
 </style>
 """
 
 st.markdown(page_bg, unsafe_allow_html=True)
 
 # --------------------------------
-# MAIN UI
+# MAIN BOX
 # --------------------------------
 st.markdown('<div class="main-box">', unsafe_allow_html=True)
 
@@ -171,13 +111,11 @@ st.markdown(
 )
 
 # --------------------------------
-# PATIENT DETAILS
+# PATIENT NAME
 # --------------------------------
-st.markdown('<div class="patient-box">', unsafe_allow_html=True)
-
 patient_name = st.text_input("👤 Enter Patient Name")
 
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
 # --------------------------------
 # INPUT SECTION
@@ -268,6 +206,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 if st.button("🔍 Predict Heart Disease"):
 
     input_data = np.array([[
+
         age,
         sex_value,
         chest_pain,
@@ -281,12 +220,11 @@ if st.button("🔍 Predict Heart Disease"):
         slope,
         vessels,
         thallium
+
     ]])
 
-    # Prediction
     prediction = model.predict(input_data)
 
-    # Probability
     probability = model.predict_proba(input_data)[0][1] * 100
 
     st.balloons()
@@ -294,7 +232,7 @@ if st.button("🔍 Predict Heart Disease"):
     st.markdown("---")
 
     # --------------------------------
-    # RESULT SECTION
+    # RESULT
     # --------------------------------
     if prediction[0] == 1:
 
@@ -302,11 +240,11 @@ if st.button("🔍 Predict Heart Disease"):
         result_status = "HIGH RISK"
 
         st.markdown(
-            '<div class="result-danger">💔 Heart Disease Found 😢</div>',
+            '<div class="result-danger">💔 Heart Disease Found</div>',
             unsafe_allow_html=True
         )
 
-        st.error("Please consult a cardiologist immediately.")
+        st.error("Please consult a doctor immediately.")
 
     else:
 
@@ -314,15 +252,12 @@ if st.button("🔍 Predict Heart Disease"):
         result_status = "NORMAL"
 
         st.markdown(
-            '<div class="result-success">🎉 No Disease Found 😍</div>',
+            '<div class="result-success">🎉 No Heart Disease Found</div>',
             unsafe_allow_html=True
         )
 
         st.success("Your heart looks healthy ❤️")
 
-    # --------------------------------
-    # RISK SCORE
-    # --------------------------------
     st.progress(int(probability))
 
     st.markdown(
@@ -331,14 +266,14 @@ if st.button("🔍 Predict Heart Disease"):
     )
 
     # --------------------------------
-    # PIE CHART
+    # CHART
     # --------------------------------
     st.markdown("## 📊 Prediction Analysis")
 
     labels = ['Healthy', 'Risk']
     sizes = [100 - probability, probability]
 
-    fig, ax = plt.subplots(figsize=(5,5))
+    fig, ax = plt.subplots()
 
     ax.pie(
         sizes,
@@ -349,148 +284,21 @@ if st.button("🔍 Predict Heart Disease"):
     st.pyplot(fig)
 
     # --------------------------------
-    # REPORT SECTION
-    # --------------------------------
-    st.markdown('<div class="report-box">', unsafe_allow_html=True)
-
-    st.markdown(
-        '<div class="report-title">🩺 HEART HEALTH MEDICAL REPORT</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        f"""
-        <h3>Patient Name: {patient_name}</h3>
-        <h4>Date: {datetime.now().strftime("%d-%m-%Y")}</h4>
-        """,
-        unsafe_allow_html=True
-    )
-
-    report_html = f"""
-    <table class="report-table">
-
-        <tr>
-            <th>Test</th>
-            <th>Result</th>
-            <th>Status</th>
-        </tr>
-
-        <tr>
-            <td>Age</td>
-            <td>{age}</td>
-            <td class="normal">NORMAL</td>
-        </tr>
-
-        <tr>
-            <td>Blood Pressure</td>
-            <td>{bp}</td>
-            <td class="{'high' if bp > 140 else 'normal'}">
-                {"HIGH" if bp > 140 else "NORMAL"}
-            </td>
-        </tr>
-
-        <tr>
-            <td>Cholesterol</td>
-            <td>{cholesterol}</td>
-            <td class="{'high' if cholesterol > 240 else 'normal'}">
-                {"HIGH" if cholesterol > 240 else "NORMAL"}
-            </td>
-        </tr>
-
-        <tr>
-            <td>Maximum Heart Rate</td>
-            <td>{max_hr}</td>
-            <td class="{'high' if max_hr < 100 else 'normal'}">
-                {"CHECK" if max_hr < 100 else "NORMAL"}
-            </td>
-        </tr>
-
-        <tr>
-            <td>Chest Pain Type</td>
-            <td>{chest_pain}</td>
-            <td class="normal">NORMAL</td>
-        </tr>
-
-        <tr>
-            <td>Fasting Blood Sugar</td>
-            <td>{fbs}</td>
-            <td class="{'high' if fbs == 1 else 'normal'}">
-                {"HIGH" if fbs == 1 else "NORMAL"}
-            </td>
-        </tr>
-
-        <tr>
-            <td>EKG Results</td>
-            <td>{ekg}</td>
-            <td class="normal">NORMAL</td>
-        </tr>
-
-        <tr>
-            <td>Exercise Induced Angina</td>
-            <td>{exercise_angina}</td>
-            <td class="{'high' if exercise_angina == 1 else 'normal'}">
-                {"CHECK" if exercise_angina == 1 else "NORMAL"}
-            </td>
-        </tr>
-
-        <tr>
-            <td>ST Depression</td>
-            <td>{st_depression}</td>
-            <td class="{'high' if st_depression > 2 else 'normal'}">
-                {"CHECK" if st_depression > 2 else "NORMAL"}
-            </td>
-        </tr>
-
-        <tr>
-            <td>Number of Major Vessels</td>
-            <td>{vessels}</td>
-            <td class="{'high' if vessels >= 2 else 'normal'}">
-                {"CHECK" if vessels >= 2 else "NORMAL"}
-            </td>
-        </tr>
-
-        <tr>
-            <td>Final Prediction</td>
-            <td>{result_text}</td>
-            <td class="{'high' if prediction[0] == 1 else 'normal'}">
-                {result_status}
-            </td>
-        </tr>
-
-    </table>
-    """
-
-    st.markdown(report_html, unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # --------------------------------
-    # PDF REPORT
+    # PDF REPORT ONLY
     # --------------------------------
     pdf = FPDF()
 
     pdf.add_page()
 
-    pdf.set_font("Arial", "B", 18)
+    pdf.set_font("Arial", "B", 20)
 
-    pdf.cell(
-        200,
-        10,
-        "HEART HEALTH MEDICAL REPORT",
-        ln=True,
-        align='C'
-    )
+    pdf.cell(200, 15, "HEART HEALTH MEDICAL REPORT", ln=True, align='C')
 
     pdf.ln(10)
 
     pdf.set_font("Arial", "", 12)
 
-    pdf.cell(
-        200,
-        10,
-        f"Patient Name: {patient_name}",
-        ln=True
-    )
+    pdf.cell(200, 10, f"Patient Name: {patient_name}", ln=True)
 
     pdf.cell(
         200,
@@ -499,28 +307,49 @@ if st.button("🔍 Predict Heart Disease"):
         ln=True
     )
 
-    pdf.ln(5)
+    pdf.ln(10)
 
-    report_lines = [
-        f"Age: {age}",
-        f"Sex: {sex}",
-        f"Blood Pressure: {bp}",
-        f"Cholesterol: {cholesterol}",
-        f"Chest Pain Type: {chest_pain}",
-        f"Fasting Blood Sugar: {fbs}",
-        f"EKG Results: {ekg}",
-        f"Maximum Heart Rate: {max_hr}",
-        f"Exercise Angina: {exercise_angina}",
-        f"ST Depression: {st_depression}",
-        f"Slope: {slope}",
-        f"Number of Vessels: {vessels}",
-        f"Thallium Test: {thallium}",
-        f"Risk Score: {probability:.2f}%",
-        f"Final Result: {result_text}"
+    # TABLE HEADER
+    pdf.set_fill_color(0, 128, 128)
+
+    pdf.set_text_color(255,255,255)
+
+    pdf.cell(80, 10, "Test", 1, 0, 'C', True)
+    pdf.cell(50, 10, "Result", 1, 0, 'C', True)
+    pdf.cell(50, 10, "Status", 1, 1, 'C', True)
+
+    pdf.set_text_color(0,0,0)
+
+    tests = [
+
+        ("Age", str(age), "NORMAL"),
+        ("Sex", sex, "NORMAL"),
+        ("Chest Pain Type", str(chest_pain), "CHECK"),
+        ("Blood Pressure", str(bp), "NORMAL"),
+        ("Cholesterol", str(cholesterol), "HIGH" if cholesterol > 240 else "NORMAL"),
+        ("Fasting Blood Sugar", str(fbs), "HIGH" if fbs == 1 else "NORMAL"),
+        ("EKG Results", str(ekg), "CHECK"),
+        ("Maximum Heart Rate", str(max_hr), "NORMAL"),
+        ("Exercise Induced Angina", str(exercise_angina), "CHECK"),
+        ("ST Depression", str(st_depression), "CHECK"),
+        ("Number of Major Vessels", str(vessels), "CHECK"),
+        ("Final Prediction", result_text, result_status)
+
     ]
 
-    for line in report_lines:
-        pdf.cell(200, 10, txt=line, ln=True)
+    for test, result, status in tests:
+
+        pdf.cell(80, 10, test, 1)
+        pdf.cell(50, 10, result, 1)
+
+        if status == "NORMAL":
+            pdf.set_text_color(0,128,0)
+        else:
+            pdf.set_text_color(255,0,0)
+
+        pdf.cell(50, 10, status, 1, 1)
+
+        pdf.set_text_color(0,0,0)
 
     pdf.output("report.pdf")
 
