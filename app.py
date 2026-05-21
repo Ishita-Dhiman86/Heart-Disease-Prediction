@@ -3,7 +3,6 @@ import numpy as np
 import joblib
 import matplotlib.pyplot as plt
 from fpdf import FPDF
-import streamlit.components.v1 as components
 from datetime import datetime
 
 # --------------------------------
@@ -38,7 +37,7 @@ background: rgba(0,0,0,0);
 }
 
 .main-box{
-background: rgba(0,0,0,0.75);
+background: rgba(0,0,0,0.72);
 padding: 40px;
 border-radius: 25px;
 box-shadow: 0px 0px 30px rgba(0,0,0,0.6);
@@ -60,7 +59,7 @@ margin-bottom:30px;
 
 .patient-box{
 background: rgba(255,255,255,0.1);
-padding: 15px;
+padding: 20px;
 border-radius: 15px;
 margin-bottom: 25px;
 }
@@ -103,16 +102,17 @@ color:white;
 }
 
 .report-box{
-background:white;
+background: rgba(255,255,255,0.93);
 padding:30px;
 border-radius:20px;
 margin-top:30px;
 color:black;
+backdrop-filter: blur(5px);
 }
 
 .report-title{
 text-align:center;
-font-size:38px;
+font-size:42px;
 font-weight:bold;
 color:#003366;
 margin-bottom:30px;
@@ -121,17 +121,19 @@ margin-bottom:30px;
 .report-table{
 width:100%;
 border-collapse: collapse;
+margin-top:20px;
 }
 
 .report-table th{
 background:#0f766e;
 color:white;
-padding:12px;
+padding:14px;
 font-size:18px;
+text-align:left;
 }
 
 .report-table td{
-padding:12px;
+padding:14px;
 border:1px solid #ddd;
 font-size:16px;
 }
@@ -336,7 +338,7 @@ if st.button("🔍 Predict Heart Disease"):
     labels = ['Healthy', 'Risk']
     sizes = [100 - probability, probability]
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(5,5))
 
     ax.pie(
         sizes,
@@ -347,7 +349,7 @@ if st.button("🔍 Predict Heart Disease"):
     st.pyplot(fig)
 
     # --------------------------------
-    # MEDICAL REPORT DISPLAY
+    # REPORT SECTION
     # --------------------------------
     st.markdown('<div class="report-box">', unsafe_allow_html=True)
 
@@ -358,20 +360,15 @@ if st.button("🔍 Predict Heart Disease"):
 
     st.markdown(
         f"""
-        <h4>Patient Name: {patient_name}</h4>
+        <h3>Patient Name: {patient_name}</h3>
         <h4>Date: {datetime.now().strftime("%d-%m-%Y")}</h4>
         """,
         unsafe_allow_html=True
     )
 
-    # Status helper
-    def status(value, low, high):
-        if value < low or value > high:
-            return "CHECK"
-        return "NORMAL"
-
     report_html = f"""
     <table class="report-table">
+
         <tr>
             <th>Test</th>
             <th>Result</th>
@@ -445,7 +442,7 @@ if st.button("🔍 Predict Heart Disease"):
         </tr>
 
         <tr>
-            <td>Number of Vessels</td>
+            <td>Number of Major Vessels</td>
             <td>{vessels}</td>
             <td class="{'high' if vessels >= 2 else 'normal'}">
                 {"CHECK" if vessels >= 2 else "NORMAL"}
@@ -475,15 +472,32 @@ if st.button("🔍 Predict Heart Disease"):
     pdf.add_page()
 
     pdf.set_font("Arial", "B", 18)
-    pdf.cell(200, 10, "HEART HEALTH MEDICAL REPORT", ln=True, align='C')
+
+    pdf.cell(
+        200,
+        10,
+        "HEART HEALTH MEDICAL REPORT",
+        ln=True,
+        align='C'
+    )
 
     pdf.ln(10)
 
     pdf.set_font("Arial", "", 12)
 
-    # IMPORTANT: no emojis in PDF
-    pdf.cell(200, 10, f"Patient Name: {patient_name}", ln=True)
-    pdf.cell(200, 10, f"Date: {datetime.now().strftime('%d-%m-%Y')}", ln=True)
+    pdf.cell(
+        200,
+        10,
+        f"Patient Name: {patient_name}",
+        ln=True
+    )
+
+    pdf.cell(
+        200,
+        10,
+        f"Date: {datetime.now().strftime('%d-%m-%Y')}",
+        ln=True
+    )
 
     pdf.ln(5)
 
