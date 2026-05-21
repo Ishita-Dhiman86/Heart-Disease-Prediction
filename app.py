@@ -27,7 +27,7 @@ page_bg = """
 <style>
 
 [data-testid="stAppViewContainer"]{
-background-image: url("https://images.unsplash.com/photo-1576091160550-2173dba999ef");
+background-image: url("https://images.unsplash.com/photo-1576091160399-112ba8d25d1f");
 background-size: cover;
 background-position: center;
 background-attachment: fixed;
@@ -38,7 +38,7 @@ background: rgba(0,0,0,0);
 }
 
 .main-box{
-background: rgba(0,0,0,0.78);
+background: rgba(0,0,0,0.75);
 padding: 40px;
 border-radius: 25px;
 box-shadow: 0px 0px 30px rgba(0,0,0,0.6);
@@ -56,6 +56,13 @@ text-align:center;
 font-size:22px;
 color:white;
 margin-bottom:30px;
+}
+
+.patient-box{
+background: rgba(255,255,255,0.1);
+padding: 15px;
+border-radius: 15px;
+margin-bottom: 25px;
 }
 
 .stButton>button{
@@ -95,41 +102,48 @@ font-weight:bold;
 color:white;
 }
 
-.report-title{
-font-size:28px;
-font-weight:bold;
-color:#0f172a;
-text-align:center;
-margin-bottom:20px;
+.report-box{
+background:white;
+padding:30px;
+border-radius:20px;
+margin-top:30px;
+color:black;
 }
 
-table{
+.report-title{
+text-align:center;
+font-size:38px;
+font-weight:bold;
+color:#003366;
+margin-bottom:30px;
+}
+
+.report-table{
 width:100%;
 border-collapse: collapse;
-background:white;
 }
 
-th{
+.report-table th{
 background:#0f766e;
 color:white;
 padding:12px;
-border:1px solid #ccc;
+font-size:18px;
 }
 
-td{
-padding:10px;
-border:1px solid #ccc;
-background:#f8fafc;
-}
-
-.high{
-background:#dc2626;
-color:white;
-font-weight:bold;
+.report-table td{
+padding:12px;
+border:1px solid #ddd;
+font-size:16px;
 }
 
 .normal{
 background:#16a34a;
+color:white;
+font-weight:bold;
+}
+
+.high{
+background:#dc2626;
 color:white;
 font-weight:bold;
 }
@@ -140,7 +154,7 @@ font-weight:bold;
 st.markdown(page_bg, unsafe_allow_html=True)
 
 # --------------------------------
-# MAIN BOX
+# MAIN UI
 # --------------------------------
 st.markdown('<div class="main-box">', unsafe_allow_html=True)
 
@@ -157,9 +171,11 @@ st.markdown(
 # --------------------------------
 # PATIENT DETAILS
 # --------------------------------
-st.markdown("## 👤 Patient Information")
+st.markdown('<div class="patient-box">', unsafe_allow_html=True)
 
-patient_name = st.text_input("Enter Patient Name")
+patient_name = st.text_input("👤 Enter Patient Name")
+
+st.markdown('</div>', unsafe_allow_html=True)
 
 # --------------------------------
 # INPUT SECTION
@@ -245,7 +261,7 @@ with col2:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # --------------------------------
-# PREDICT BUTTON
+# PREDICTION BUTTON
 # --------------------------------
 if st.button("🔍 Predict Heart Disease"):
 
@@ -265,8 +281,10 @@ if st.button("🔍 Predict Heart Disease"):
         thallium
     ]])
 
+    # Prediction
     prediction = model.predict(input_data)
 
+    # Probability
     probability = model.predict_proba(input_data)[0][1] * 100
 
     st.balloons()
@@ -278,7 +296,7 @@ if st.button("🔍 Predict Heart Disease"):
     # --------------------------------
     if prediction[0] == 1:
 
-        result_text = "Heart Disease Found 😢"
+        result_text = "Heart Disease Detected"
         result_status = "HIGH RISK"
 
         st.markdown(
@@ -286,36 +304,22 @@ if st.button("🔍 Predict Heart Disease"):
             unsafe_allow_html=True
         )
 
-        components.html(
-        """
-        <div style="text-align:center;">
-        <img src="https://media.tenor.com/6oSedVpeB-YAAAAC/broken-heart.gif" width="350">
-        </div>
-        """,
-        height=350
-        )
+        st.error("Please consult a cardiologist immediately.")
 
     else:
 
-        result_text = "No Heart Disease Found 😍"
+        result_text = "No Heart Disease Detected"
         result_status = "NORMAL"
 
         st.markdown(
-            '<div class="result-success">🎉 Hurrayy! No Disease Found 😍</div>',
+            '<div class="result-success">🎉 No Disease Found 😍</div>',
             unsafe_allow_html=True
         )
 
-        components.html(
-        """
-        <div style="text-align:center;">
-        <img src="https://media.tenor.com/0AVbKGY_MxMAAAAC/heart.gif" width="350">
-        </div>
-        """,
-        height=350
-        )
+        st.success("Your heart looks healthy ❤️")
 
     # --------------------------------
-    # RISK BAR
+    # RISK SCORE
     # --------------------------------
     st.progress(int(probability))
 
@@ -343,100 +347,125 @@ if st.button("🔍 Predict Heart Disease"):
     st.pyplot(fig)
 
     # --------------------------------
-    # MEDICAL REPORT TEMPLATE
+    # MEDICAL REPORT DISPLAY
     # --------------------------------
-    st.markdown("## 🧾 Medical Report")
+    st.markdown('<div class="report-box">', unsafe_allow_html=True)
+
+    st.markdown(
+        '<div class="report-title">🩺 HEART HEALTH MEDICAL REPORT</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        f"""
+        <h4>Patient Name: {patient_name}</h4>
+        <h4>Date: {datetime.now().strftime("%d-%m-%Y")}</h4>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Status helper
+    def status(value, low, high):
+        if value < low or value > high:
+            return "CHECK"
+        return "NORMAL"
 
     report_html = f"""
-    <div style="background:white;padding:20px;border-radius:15px;">
+    <table class="report-table">
+        <tr>
+            <th>Test</th>
+            <th>Result</th>
+            <th>Status</th>
+        </tr>
 
-    <div class="report-title">
-    HEART HEALTH MEDICAL REPORT
-    </div>
+        <tr>
+            <td>Age</td>
+            <td>{age}</td>
+            <td class="normal">NORMAL</td>
+        </tr>
 
-    <p><b>Patient Name:</b> {patient_name}</p>
-    <p><b>Date:</b> {datetime.now().strftime("%d-%m-%Y")}</p>
+        <tr>
+            <td>Blood Pressure</td>
+            <td>{bp}</td>
+            <td class="{'high' if bp > 140 else 'normal'}">
+                {"HIGH" if bp > 140 else "NORMAL"}
+            </td>
+        </tr>
 
-    <table>
+        <tr>
+            <td>Cholesterol</td>
+            <td>{cholesterol}</td>
+            <td class="{'high' if cholesterol > 240 else 'normal'}">
+                {"HIGH" if cholesterol > 240 else "NORMAL"}
+            </td>
+        </tr>
 
-    <tr>
-    <th>Test</th>
-    <th>Result</th>
-    <th>Status</th>
-    </tr>
+        <tr>
+            <td>Maximum Heart Rate</td>
+            <td>{max_hr}</td>
+            <td class="{'high' if max_hr < 100 else 'normal'}">
+                {"CHECK" if max_hr < 100 else "NORMAL"}
+            </td>
+        </tr>
 
-    <tr>
-    <td>Age</td>
-    <td>{age}</td>
-    <td class="normal">NORMAL</td>
-    </tr>
+        <tr>
+            <td>Chest Pain Type</td>
+            <td>{chest_pain}</td>
+            <td class="normal">NORMAL</td>
+        </tr>
 
-    <tr>
-    <td>Sex</td>
-    <td>{sex}</td>
-    <td class="normal">NORMAL</td>
-    </tr>
+        <tr>
+            <td>Fasting Blood Sugar</td>
+            <td>{fbs}</td>
+            <td class="{'high' if fbs == 1 else 'normal'}">
+                {"HIGH" if fbs == 1 else "NORMAL"}
+            </td>
+        </tr>
 
-    <tr>
-    <td>Chest Pain Type</td>
-    <td>{chest_pain}</td>
-    <td class="high">CHECK</td>
-    </tr>
+        <tr>
+            <td>EKG Results</td>
+            <td>{ekg}</td>
+            <td class="normal">NORMAL</td>
+        </tr>
 
-    <tr>
-    <td>Blood Pressure</td>
-    <td>{bp}</td>
-    <td class="high">HIGH</td>
-    </tr>
+        <tr>
+            <td>Exercise Induced Angina</td>
+            <td>{exercise_angina}</td>
+            <td class="{'high' if exercise_angina == 1 else 'normal'}">
+                {"CHECK" if exercise_angina == 1 else "NORMAL"}
+            </td>
+        </tr>
 
-    <tr>
-    <td>Cholesterol</td>
-    <td>{cholesterol}</td>
-    <td class="high">HIGH</td>
-    </tr>
+        <tr>
+            <td>ST Depression</td>
+            <td>{st_depression}</td>
+            <td class="{'high' if st_depression > 2 else 'normal'}">
+                {"CHECK" if st_depression > 2 else "NORMAL"}
+            </td>
+        </tr>
 
-    <tr>
-    <td>EKG Results</td>
-    <td>{ekg}</td>
-    <td class="normal">NORMAL</td>
-    </tr>
+        <tr>
+            <td>Number of Vessels</td>
+            <td>{vessels}</td>
+            <td class="{'high' if vessels >= 2 else 'normal'}">
+                {"CHECK" if vessels >= 2 else "NORMAL"}
+            </td>
+        </tr>
 
-    <tr>
-    <td>Maximum Heart Rate</td>
-    <td>{max_hr}</td>
-    <td class="normal">NORMAL</td>
-    </tr>
-
-    <tr>
-    <td>Exercise Angina</td>
-    <td>{exercise_angina}</td>
-    <td class="high">CHECK</td>
-    </tr>
-
-    <tr>
-    <td>ST Depression</td>
-    <td>{st_depression}</td>
-    <td class="high">CHECK</td>
-    </tr>
-
-    <tr>
-    <td>Thallium Test</td>
-    <td>{thallium}</td>
-    <td class="high">CHECK</td>
-    </tr>
-
-    <tr>
-    <td><b>Final Result</b></td>
-    <td><b>{result_text}</b></td>
-    <td class="high">{result_status}</td>
-    </tr>
+        <tr>
+            <td>Final Prediction</td>
+            <td>{result_text}</td>
+            <td class="{'high' if prediction[0] == 1 else 'normal'}">
+                {result_status}
+            </td>
+        </tr>
 
     </table>
-
-    </div>
     """
 
     st.markdown(report_html, unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # --------------------------------
     # PDF REPORT
@@ -445,53 +474,39 @@ if st.button("🔍 Predict Heart Disease"):
 
     pdf.add_page()
 
-    pdf.set_font("Arial", 'B', 18)
-
-    pdf.cell(200, 10, txt="Heart Health Medical Report", ln=True)
+    pdf.set_font("Arial", "B", 18)
+    pdf.cell(200, 10, "HEART HEALTH MEDICAL REPORT", ln=True, align='C')
 
     pdf.ln(10)
 
-    pdf.set_font("Arial", size=12)
+    pdf.set_font("Arial", "", 12)
 
-    pdf.cell(200, 10, txt=f"Patient Name: {patient_name}", ln=True)
-
-    pdf.cell(
-        200,
-        10,
-        txt=f"Date: {datetime.now().strftime('%d-%m-%Y')}",
-        ln=True
-    )
+    # IMPORTANT: no emojis in PDF
+    pdf.cell(200, 10, f"Patient Name: {patient_name}", ln=True)
+    pdf.cell(200, 10, f"Date: {datetime.now().strftime('%d-%m-%Y')}", ln=True)
 
     pdf.ln(5)
 
-    pdf.cell(200, 10, txt=f"Age: {age}", ln=True)
-    pdf.cell(200, 10, txt=f"Sex: {sex}", ln=True)
-    pdf.cell(200, 10, txt=f"Chest Pain Type: {chest_pain}", ln=True)
-    pdf.cell(200, 10, txt=f"Blood Pressure: {bp}", ln=True)
-    pdf.cell(200, 10, txt=f"Cholesterol: {cholesterol}", ln=True)
-    pdf.cell(200, 10, txt=f"EKG Results: {ekg}", ln=True)
-    pdf.cell(200, 10, txt=f"Maximum Heart Rate: {max_hr}", ln=True)
-    pdf.cell(200, 10, txt=f"Exercise Angina: {exercise_angina}", ln=True)
-    pdf.cell(200, 10, txt=f"ST Depression: {st_depression}", ln=True)
-    pdf.cell(200, 10, txt=f"Thallium Test: {thallium}", ln=True)
+    report_lines = [
+        f"Age: {age}",
+        f"Sex: {sex}",
+        f"Blood Pressure: {bp}",
+        f"Cholesterol: {cholesterol}",
+        f"Chest Pain Type: {chest_pain}",
+        f"Fasting Blood Sugar: {fbs}",
+        f"EKG Results: {ekg}",
+        f"Maximum Heart Rate: {max_hr}",
+        f"Exercise Angina: {exercise_angina}",
+        f"ST Depression: {st_depression}",
+        f"Slope: {slope}",
+        f"Number of Vessels: {vessels}",
+        f"Thallium Test: {thallium}",
+        f"Risk Score: {probability:.2f}%",
+        f"Final Result: {result_text}"
+    ]
 
-    pdf.ln(10)
-
-    pdf.set_font("Arial", 'B', 16)
-
-    pdf.cell(
-        200,
-        10,
-        txt=f"FINAL RESULT: {result_text}",
-        ln=True
-    )
-
-    pdf.cell(
-        200,
-        10,
-        txt=f"Risk Score: {probability:.2f}%",
-        ln=True
-    )
+    for line in report_lines:
+        pdf.cell(200, 10, txt=line, ln=True)
 
     pdf.output("report.pdf")
 
