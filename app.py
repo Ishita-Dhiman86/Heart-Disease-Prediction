@@ -205,7 +205,6 @@ st.markdown("<br>", unsafe_allow_html=True)
 if st.button("🔍 Predict Heart Disease"):
 
     input_data = np.array([[
-
         age,
         sex_value,
         chest_pain,
@@ -219,9 +218,11 @@ if st.button("🔍 Predict Heart Disease"):
         slope,
         vessels,
         thallium
-
     ]])
 
+    # --------------------------------
+    # PREDICTION
+    # --------------------------------
     prediction = model.predict(input_data)
 
     probability = model.predict_proba(input_data)[0][1] * 100
@@ -234,7 +235,6 @@ if st.button("🔍 Predict Heart Disease"):
     if prediction[0] == 1:
 
         result_text = "Heart Disease Detected"
-        result_status = "HIGH RISK"
 
         st.markdown(
             '<div class="result-danger">💔 Heart Disease Found</div>',
@@ -246,7 +246,6 @@ if st.button("🔍 Predict Heart Disease"):
     else:
 
         result_text = "No Heart Disease Detected"
-        result_status = "NORMAL"
 
         st.markdown(
             '<div class="result-success">🎉 No Heart Disease Found</div>',
@@ -255,6 +254,9 @@ if st.button("🔍 Predict Heart Disease"):
 
         st.success("Your heart looks healthy ❤️")
 
+    # --------------------------------
+    # RISK SCORE
+    # --------------------------------
     st.progress(int(probability))
 
     st.markdown(
@@ -300,7 +302,9 @@ if st.button("🔍 Predict Heart Disease"):
 
     pdf.ln(10)
 
+    # --------------------------------
     # PATIENT DETAILS
+    # --------------------------------
     pdf.set_font("Arial", "", 12)
 
     pdf.cell(
@@ -319,7 +323,9 @@ if st.button("🔍 Predict Heart Disease"):
 
     pdf.ln(10)
 
+    # --------------------------------
     # TABLE HEADER
+    # --------------------------------
     pdf.set_fill_color(0, 128, 128)
 
     pdf.set_text_color(255,255,255)
@@ -330,27 +336,56 @@ if st.button("🔍 Predict Heart Disease"):
 
     pdf.set_text_color(0,0,0)
 
+    # --------------------------------
     # TABLE DATA
+    # --------------------------------
     tests = [
 
         ("Age", str(age), "NORMAL"),
+
         ("Sex", sex, "NORMAL"),
-        ("Chest Pain Type", str(chest_pain), "CHECK"),
-        ("Blood Pressure", str(bp), "NORMAL"),
-        ("Cholesterol", str(cholesterol),
+
+        ("Chest Pain Type",
+         str(chest_pain),
+         "CHECK"),
+
+        ("Blood Pressure",
+         str(bp),
+         "HIGH" if bp > 140 else "NORMAL"),
+
+        ("Cholesterol",
+         str(cholesterol),
          "HIGH" if cholesterol > 240 else "NORMAL"),
-        ("Fasting Blood Sugar", str(fbs),
+
+        ("Fasting Blood Sugar",
+         str(fbs),
          "HIGH" if fbs == 1 else "NORMAL"),
-        ("EKG Results", str(ekg), "CHECK"),
-        ("Maximum Heart Rate", str(max_hr), "NORMAL"),
+
+        ("EKG Results",
+         str(ekg),
+         "CHECK"),
+
+        ("Maximum Heart Rate",
+         str(max_hr),
+         "NORMAL"),
+
         ("Exercise Induced Angina",
-         str(exercise_angina), "CHECK"),
-        ("ST Depression", str(st_depression), "CHECK"),
+         str(exercise_angina),
+         "CHECK"),
+
+        ("ST Depression",
+         str(st_depression),
+         "CHECK"),
+
         ("Number of Major Vessels",
-         str(vessels), "CHECK")
+         str(vessels),
+         "CHECK")
 
     ]
 
+    # --------------------------------
+    # ADD TABLE ROWS
+    # --------------------------------
     for test, result, status in tests:
 
         pdf.cell(80, 10, test, 1)
@@ -359,18 +394,20 @@ if st.button("🔍 Predict Heart Disease"):
 
         if status == "NORMAL":
 
-            pdf.set_text_color(0,128,0)
+            pdf.set_text_color(0, 128, 0)
 
         else:
 
-            pdf.set_text_color(255,0,0)
+            pdf.set_text_color(255, 0, 0)
 
         pdf.cell(50, 10, status, 1, 1)
 
-        pdf.set_text_color(0,0,0)
+        pdf.set_text_color(0, 0, 0)
 
-    # FINAL RESULT BELOW TABLE
-    pdf.ln(10)
+    # --------------------------------
+    # FINAL RESULT
+    # --------------------------------
+    pdf.ln(15)
 
     pdf.set_font("Arial", "B", 16)
 
@@ -398,10 +435,14 @@ if st.button("🔍 Predict Heart Disease"):
 
     pdf.set_text_color(0,0,0)
 
+    # --------------------------------
     # SAVE PDF
+    # --------------------------------
     pdf.output("report.pdf")
 
+    # --------------------------------
     # DOWNLOAD BUTTON
+    # --------------------------------
     with open("report.pdf", "rb") as file:
 
         st.download_button(
